@@ -8,9 +8,11 @@ function M.check()
   vim.health.start("jvm-env")
 
   local u = vim.uv.os_uname()
+  local is_windows = u.sysname:match("Windows") ~= nil
+  local is_macos = u.sysname == "Darwin"
   vim.health.info(("OS: %s %s (%s)"):format(u.sysname, u.release, u.machine))
 
-  if u.sysname == "Darwin" then
+  if is_macos then
     if vim.fn.executable("jenv") == 1 then
       vim.health.ok("jenv: installed")
     else
@@ -21,7 +23,7 @@ function M.check()
     else
       vim.health.warn("/usr/libexec/java_home: missing")
     end
-  elseif u.sysname ~= "Windows_NT" and not u.sysname:match("Windows") then
+  elseif not is_windows then
     local sdkman = (vim.env.HOME or "") .. "/.sdkman/candidates/java"
     if vim.fn.isdirectory(sdkman) == 1 then
       vim.health.ok("SDKMAN: " .. sdkman)

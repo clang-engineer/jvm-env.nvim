@@ -9,14 +9,32 @@ local uname = vim.uv.os_uname()
 local is_windows = uname.sysname:match("Windows") ~= nil
 local is_macos = uname.sysname == "Darwin"
 
--- Glob a pattern and return the alphabetically-largest match. Within a major
--- version that's a close-enough proxy for "most recent patch" (e.g.
--- jdk-21.0.10 sorts after jdk-21.0.9). Returns nil when nothing matches.
+-- Natural-order comparison: extract numeric segments and compare them as
+-- numbers so "jdk-21.0.10" sorts after "jdk-21.0.9". Falls back to string
+-- compare when numeric parts tie.
+local function nat_key(s)
+  local parts = {}
+  for num in s:gmatch("%d+") do
+    parts[#parts + 1] = tonumber(num)
+  end
+  return parts
+end
+
+local function lt_natural(a, b)
+  local ka, kb = nat_key(a), nat_key(b)
+  for i = 1, math.max(#ka, #kb) do
+    local va, vb = ka[i] or 0, kb[i] or 0
+    if va ~= vb then return va < vb end
+  end
+  return a < b
+end
+
+-- Glob a pattern and return the highest-versioned match, or nil.
 local function pick_largest(pattern)
   local expanded = vim.fn.glob(pattern)
   if expanded == "" then return nil end
   local matches = vim.fn.split(expanded, "\n")
-  table.sort(matches)
+  table.sort(matches, lt_natural)
   return matches[#matches]
 end
 
@@ -46,17 +64,28 @@ end
 
 local function find_macos(version)
   if vim.fn.executable("jenv") == 1 then
-    -- 1. jenv major version match
+    -- 1. jenv major-version match
     local jenv = vim.fn.trim(vim.fn.system("jenv prefix " .. version .. " 2>/dev/null"))
     if vim.v.shell_error == 0 and jenv ~= "" then
       return jenv
     end
-    -- 2. jenv exact version (e.g. "21" doesn't match but "21.0.1" does)
-    local exact = vim.fn.trim(vim.fn.system("jenv versions --bare 2>/dev/null | grep '^" .. version .. "\\.' | tail -1"))
-    if vim.v.shell_error == 0 and exact ~= "" then
-      jenv = vim.fn.trim(vim.fn.system("jenv prefix " .. exact .. " 2>/dev/null"))
-      if vim.v.shell_error == 0 and jenv ~= "" then
-        return jenv
+    -- 2. exact-version fallback (e.g. "21" misses but "21.0.1" matches)
+    local lines = vim.fn.systemlist("jenv versions --bare 2>/dev/null")
+    if vim.v.shell_error == 0 and type(lines) == "table" then
+      local prefix = version .. "."
+      local matched = {}
+      for _, line in ipairs(lines) do
+        if vim.startswith(line, prefix) then
+          matched[#matched + 1] = line
+        end
+      end
+      if #matched > 0 then
+        table.sort(matched, lt_natural)
+        local exact = matched[#matched]
+        local jenv2 = vim.fn.trim(vim.fn.system("jenv prefix " .. exact .. " 2>/dev/null"))
+        if vim.v.shell_error == 0 and jenv2 ~= "" then
+          return jenv2
+        end
       end
     end
   end
@@ -81,7 +110,6 @@ local function find_linux(version)
       return path
     end
   end
-  -- Versioned fallbacks (pick highest patch within the major).
   local patterns = {
     "/usr/lib/jvm/jdk-" .. version .. ".*",
     "/usr/lib/jvm/java-" .. version .. ".*",
