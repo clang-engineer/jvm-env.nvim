@@ -16,6 +16,8 @@ jobs:
     name: panvimdoc
     steps:
       - uses: actions/checkout@v4
+      - name: Ensure doc directory exists
+        run: mkdir -p doc
       - uses: kdheepak/panvimdoc@main
         with:
           vimdoc: jvm-env

@@ -25,7 +25,9 @@ local function lt_natural(a, b)
   local ka, kb = nat_key(a), nat_key(b)
   for i = 1, math.max(#ka, #kb) do
     local va, vb = ka[i] or 0, kb[i] or 0
-    if va ~= vb then return va < vb end
+    if va ~= vb then
+      return va < vb
+    end
   end
   return a < b
 end
@@ -33,7 +35,9 @@ end
 -- Glob a pattern and return the highest-versioned match, or nil.
 local function pick_largest(pattern)
   local expanded = vim.fn.glob(pattern)
-  if expanded == "" then return nil end
+  if expanded == "" then
+    return nil
+  end
   local matches = vim.fn.split(expanded, "\n")
   table.sort(matches, lt_natural)
   return matches[#matches]
@@ -53,9 +57,13 @@ local function find_windows(version)
       root = root:gsub("\\", "/")
       for _, vendor in ipairs(vendors) do
         local bare = root .. "/" .. vendor .. "/jdk-" .. version
-        if vim.fn.isdirectory(bare) == 1 then return bare end
+        if vim.fn.isdirectory(bare) == 1 then
+          return bare
+        end
         local hit = pick_largest(root .. "/" .. vendor .. "/jdk-" .. version .. ".*")
-        if hit then return hit end
+        if hit then
+          return hit
+        end
       end
     end
   end
@@ -135,7 +143,9 @@ local function find_linux(version)
   }
   for _, pattern in ipairs(patterns) do
     local hit = pick_largest(pattern)
-    if hit then return hit end
+    if hit then
+      return hit
+    end
   end
   return nil
 end

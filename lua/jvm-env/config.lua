@@ -2,7 +2,7 @@
 local M = {}
 
 local defaults = {
-  jdtls = "21",  -- JDK major version used to run jdtls
+  jdtls = "21", -- JDK major version used to run jdtls
   gradle = "11", -- JDK major version used by Gradle
 }
 

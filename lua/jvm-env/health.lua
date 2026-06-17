@@ -38,7 +38,7 @@ function M.check()
   end
 
   local targets = {
-    { key = "jdtls",  env = "JDTLS_JAVA_HOME"  },
+    { key = "jdtls", env = "JDTLS_JAVA_HOME" },
     { key = "gradle", env = "GRADLE_JAVA_HOME" },
   }
   for _, t in ipairs(targets) do
