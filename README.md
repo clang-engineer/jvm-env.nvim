@@ -1,5 +1,9 @@
 # jvm-env.nvim
 
+[![lint](https://github.com/clang-engineer/jvm-env.nvim/actions/workflows/lint.yml/badge.svg)](https://github.com/clang-engineer/jvm-env.nvim/actions/workflows/lint.yml)
+[![test](https://github.com/clang-engineer/jvm-env.nvim/actions/workflows/test.yml/badge.svg)](https://github.com/clang-engineer/jvm-env.nvim/actions/workflows/test.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+
 > **Status**: experimental (v0.1.x) — actively used by the author on macOS,
 > partially tested on Linux/Windows. Feedback and issues welcome.
 
@@ -45,6 +49,11 @@ Toggling shell `JAVA_HOME` for every project is awkward, and the `nvim-jdtls` RE
 | **jvm-env (this plugin)** | **OS/manager detection + split jdtls/Gradle env vars.** No LSP. |
 
 These are complementary. If you already use a full-stack solution like `nvim-java`, you don't need this. jvm-env is for users layering light automation on top of `nvim-jdtls` or LazyVim Java extras.
+
+## Requirements
+
+- Neovim 0.10+ (uses `vim.uv` and the new `vim.health` API).
+- One JDK manager / install path supported below (jEnv, SDKMAN, Homebrew, apt, scoop, Adoptium, …).
 
 ## Install
 
@@ -143,11 +152,11 @@ Enable with `vim.o.exrc = true` and `:trust` the file once. Reopening Neovim ins
 
 | OS | Order |
 |---|---|
-| **macOS** | 1. `jenv prefix <ver>` (if `jenv` is installed) → 2. `jenv versions --bare \| grep '^<ver>\\.'` (exact fallback) → 3. `/usr/libexec/java_home -v <ver>` |
+| **macOS** | 1. `jenv prefix <ver>` (if `jenv` is installed) → 2. `jenv versions --bare` filtered to `<ver>.*` (exact fallback) → 3. `/usr/libexec/java_home -v <ver>` → 4. Homebrew `/opt/homebrew/opt/openjdk@<ver>` / `/usr/local/opt/openjdk@<ver>` → 5. `~/.sdkman/candidates/java/<ver>.*` |
 | **Linux** | 1. `/usr/lib/jvm/java-<ver>-openjdk` → 2. `/usr/lib/jvm/java-<ver>-openjdk-amd64` → 3. `/usr/lib/jvm/jdk-<ver>` → 4. `/usr/lib/jvm/jdk-<ver>.*` (versioned) → 5. `/usr/lib/jvm/java-<ver>.*` (versioned) → 6. `~/.sdkman/candidates/java/<ver>.*` |
 | **Windows** | 1. `%ProgramW6432%` / `%ProgramFiles%` / `C:\Program Files` × Eclipse Adoptium / Java / Microsoft, matching `jdk-<ver>` then `jdk-<ver>.*` → 2. scoop `openjdk<ver>/current` |
 
-The order is: precise version managers first, then standard install paths, then per-manager fallbacks. When multiple patch versions match (e.g. `jdk-21.0.1`, `jdk-21.0.2`), the alphabetically largest is selected as a proxy for "most recent within the major version".
+The order is: precise version managers first, then standard install paths, then per-manager fallbacks. When multiple patch versions match (e.g. `jdk-21.0.1`, `jdk-21.0.10`), the highest one is selected via natural (numeric) ordering so `21.0.10` outranks `21.0.9`.
 
 `:checkhealth jvm-env` prints the detected manager presence and the path each configured version resolves to.
 
