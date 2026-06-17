@@ -171,10 +171,6 @@ Why not reuse `JAVA_HOME`:
 - A single `JAVA_HOME` cannot separate jdtls from Gradle.
 - Overriding the shell `JAVA_HOME` affects unrelated tools.
 
-Possible future option:
-
-- `setup({ env = { jdtls = "MY_HOME" } })` env-var overrides — open to add if there's demand.
-
 ## API
 
 ### `setup(opts)`
@@ -185,22 +181,6 @@ Possible future option:
 | `gradle` | string \| false | `"11"` | JDK major version used by Gradle. Pass `false` to skip. |
 
 Versions are major-version strings (e.g. `"21"`). Exact versions (e.g. `"21.0.1"`) also work if `jenv` / `java_home` can match them, but the major version is usually enough.
-
-## Migration (from a private `config.java-env`)
-
-Old:
-
-```lua
-require("config.java-env").setup({ jdtls = "21", gradle = "17" })
-```
-
-New:
-
-```lua
-require("jvm-env").setup({ jdtls = "21", gradle = "17" })
-```
-
-Update any `.nvim.lua` files in your projects, or regenerate them with your generator script.
 
 ## License
 
