@@ -15,7 +15,6 @@ Table of Contents                                  *jvm-env-table-of-contents*
   - Detection order                     |jvm-env-jvm-env.nvim-detection-order|
   - Environment variable naming|jvm-env-jvm-env.nvim-environment-variable-naming|
   - API                                             |jvm-env-jvm-env.nvim-api|
-  - Migration (from a private config.java-env)|jvm-env-jvm-env.nvim-migration-(from-a-private-config.java-env)|
   - License                                     |jvm-env-jvm-env.nvim-license|
 2. Links                                                       |jvm-env-links|
 
@@ -256,10 +255,6 @@ Why not reuse `JAVA_HOME`:
 - A single `JAVA_HOME` cannot separate jdtls from Gradle.
 - Overriding the shell `JAVA_HOME` affects unrelated tools.
 
-Possible future option:
-
-- `setup({ env = { jdtls = "MY_HOME" } })` env-var overrides — open to add if there’s demand.
-
 
 API                                                 *jvm-env-jvm-env.nvim-api*
 
@@ -282,24 +277,6 @@ SETUP(OPTS) ~
 Versions are major-version strings (e.g. `"21"`). Exact versions (e.g.
 `"21.0.1"`) also work if `jenv` / `java_home` can match them, but the major
 version is usually enough.
-
-
-MIGRATION (FROM A PRIVATE CONFIG.JAVA-ENV)*jvm-env-jvm-env.nvim-migration-(from-a-private-config.java-env)*
-
-Old:
-
->lua
-    require("config.java-env").setup({ jdtls = "21", gradle = "17" })
-<
-
-New:
-
->lua
-    require("jvm-env").setup({ jdtls = "21", gradle = "17" })
-<
-
-Update any `.nvim.lua` files in your projects, or regenerate them with your
-generator script.
 
 
 LICENSE                                         *jvm-env-jvm-env.nvim-license*
