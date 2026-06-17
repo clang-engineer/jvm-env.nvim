@@ -92,6 +92,13 @@ These are complementary. If you already use a full-stack solution like
 `nvim-java`, you don’t need this. jvm-env is for users layering light
 automation on top of `nvim-jdtls` or LazyVim Java extras.
 
+The "auto-detect JDK by major version and inject into env vars" niche is not
+covered by the above — see nvim-jdtls discussion #548
+<https://github.com/mfussenegger/nvim-jdtls/discussions/548> and mason.nvim
+discussion #1893 <https://github.com/mason-org/mason.nvim/discussions/1893>,
+where the answer is consistently "set `JAVA_HOME` yourself." jvm-env fills that
+gap.
+
 
 REQUIREMENTS                               *jvm-env-jvm-env.nvim-requirements*
 
