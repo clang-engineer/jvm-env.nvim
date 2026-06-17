@@ -12,8 +12,9 @@ CONTENTS                                                      *jvm-env-contents*
   4. API .................................... |jvm-env-api|
   5. Environment variables .................. |jvm-env-env|
   6. Detection order ........................ |jvm-env-detection|
-  7. Examples ............................... |jvm-env-examples|
-  8. Migration .............................. |jvm-env-migration|
+  7. Health ................................. |jvm-env-health|
+  8. Examples ............................... |jvm-env-examples|
+  9. Migration .............................. |jvm-env-migration|
 
 ==============================================================================
 1. INTRODUCTION                                            *jvm-env-introduction*
@@ -48,12 +49,15 @@ require("jvm-env").setup({opts})
 
 Options table:
                                                               *jvm-env-opts*
-  jdtls   (string)  JDK major version for running jdtls.   Default: "21"
-  gradle  (string)  JDK major version for Gradle builds.   Default: "11"
+  jdtls   (string|false)  JDK major version for running jdtls.  Default: "21"
+                          Pass `false` to skip JDTLS_JAVA_HOME entirely.
+  gradle  (string|false)  JDK major version for Gradle builds.  Default: "11"
+                          Pass `false` to skip GRADLE_JAVA_HOME entirely.
 
 Example: >lua
 
   require("jvm-env").setup({ jdtls = "21", gradle = "17" })
+  require("jvm-env").setup({ jdtls = "21", gradle = false })  -- only jdtls
 <
 ==============================================================================
 4. API                                                            *jvm-env-api*
@@ -99,7 +103,7 @@ to avoid clobbering other tools.
 For each major version string, jvm-env tries managers/paths in this order:
 
 macOS:
-  1. jenv prefix <ver>                     (major-version match)
+  1. jenv prefix <ver>                     (only if jenv is installed)
   2. jenv versions --bare | grep '^<ver>.' (exact-version fallback)
   3. /usr/libexec/java_home -v <ver>
 
@@ -107,18 +111,38 @@ Linux:
   1. /usr/lib/jvm/java-<ver>-openjdk
   2. /usr/lib/jvm/java-<ver>-openjdk-amd64
   3. /usr/lib/jvm/jdk-<ver>
-  4. ~/.sdkman/candidates/java/<ver>*
+  4. /usr/lib/jvm/jdk-<ver>.*          (versioned, pick highest)
+  5. /usr/lib/jvm/java-<ver>.*         (versioned, pick highest)
+  6. ~/.sdkman/candidates/java/<ver>.* (pick highest)
 
-Windows:
-  1. C:\Program Files\Eclipse Adoptium\jdk-<ver>*
-  2. C:\Program Files\Java\jdk-<ver>*
-  3. C:\Program Files\Microsoft\jdk-<ver>*
+Windows (each root in %ProgramW6432%, %ProgramFiles%, C:\Program Files):
+  1. <root>\Eclipse Adoptium\jdk-<ver>  then jdk-<ver>.*
+  2. <root>\Java\jdk-<ver>              then jdk-<ver>.*
+  3. <root>\Microsoft\jdk-<ver>         then jdk-<ver>.*
   4. %USERPROFILE%\scoop\apps\openjdk<ver>\current
 
-If nothing matches, vim.notify warns and the env var stays unset.
+When multiple patch versions match, the alphabetically largest path wins as a
+proxy for "most recent within the major version". If nothing matches,
+vim.notify warns and the env var stays unset.
 
 ==============================================================================
-7. EXAMPLES                                                  *jvm-env-examples*
+7. HEALTH                                                      *jvm-env-health*
+
+Run >vim
+
+  :checkhealth jvm-env
+<
+to see:
+  - the detected OS,
+  - which managers (jenv, /usr/libexec/java_home, SDKMAN, /usr/lib/jvm) are
+    visible,
+  - the JDK path each configured version resolves to,
+  - the current value of |vim.env.JDTLS_JAVA_HOME| / |vim.env.GRADLE_JAVA_HOME|.
+
+Versions opted out via `false` (see |jvm-env-opts|) show as `disabled`.
+
+==============================================================================
+8. EXAMPLES                                                  *jvm-env-examples*
 
 Connecting to nvim-jdtls (the canonical pattern): >lua
 
@@ -159,7 +183,7 @@ Per-project versions via |.nvim.lua|: >lua
 Enable exrc with `vim.o.exrc = true` and `:trust` the file once.
 
 ==============================================================================
-8. MIGRATION                                                *jvm-env-migration*
+9. MIGRATION                                                *jvm-env-migration*
 
 If you used a private `config.java-env` module before:
 

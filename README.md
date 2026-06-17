@@ -17,6 +17,7 @@ require("jvm-env").setup({ jdtls = "21", gradle = "17" })
 - Tries `jenv prefix` / `/usr/libexec/java_home` / `~/.sdkman` / `/usr/lib/jvm/*` / standard Windows JDK paths / scoop **per OS, in order** to locate the JDK home for the requested major version.
 - Writes the resolved path into `vim.env.JDTLS_JAVA_HOME` and `vim.env.GRADLE_JAVA_HOME`.
 - If nothing is found, warns via `vim.notify` and keeps going — never blocks other startup.
+- Run `:checkhealth jvm-env` to see which managers are visible and which paths each version resolves to.
 
 ## What it does NOT do
 
@@ -78,6 +79,15 @@ require("jvm-env").setup()
 require("jvm-env").setup({ jdtls = "21", gradle = "17" })
 ```
 
+### Disabling one side
+
+Pass `false` to skip detection for that env var entirely (no warning, no value set):
+
+```lua
+require("jvm-env").setup({ jdtls = "21", gradle = false })
+-- only JDTLS_JAVA_HOME is touched
+```
+
 ### Wiring up jdtls (LazyVim + nvim-jdtls)
 
 `lua/plugins/java.lua`:
@@ -133,11 +143,13 @@ Enable with `vim.o.exrc = true` and `:trust` the file once. Reopening Neovim ins
 
 | OS | Order |
 |---|---|
-| **macOS** | 1. `jenv prefix <ver>` (major match) → 2. `jenv versions --bare \| grep '^<ver>\\.'` (exact fallback) → 3. `/usr/libexec/java_home -v <ver>` |
-| **Linux** | 1. `/usr/lib/jvm/java-<ver>-openjdk` → 2. `/usr/lib/jvm/java-<ver>-openjdk-amd64` → 3. `/usr/lib/jvm/jdk-<ver>` → 4. `~/.sdkman/candidates/java/<ver>*` |
-| **Windows** | 1. Eclipse Adoptium `jdk-<ver>*` → 2. Java `jdk-<ver>*` → 3. Microsoft `jdk-<ver>*` → 4. scoop `openjdk<ver>/current` |
+| **macOS** | 1. `jenv prefix <ver>` (if `jenv` is installed) → 2. `jenv versions --bare \| grep '^<ver>\\.'` (exact fallback) → 3. `/usr/libexec/java_home -v <ver>` |
+| **Linux** | 1. `/usr/lib/jvm/java-<ver>-openjdk` → 2. `/usr/lib/jvm/java-<ver>-openjdk-amd64` → 3. `/usr/lib/jvm/jdk-<ver>` → 4. `/usr/lib/jvm/jdk-<ver>.*` (versioned) → 5. `/usr/lib/jvm/java-<ver>.*` (versioned) → 6. `~/.sdkman/candidates/java/<ver>.*` |
+| **Windows** | 1. `%ProgramW6432%` / `%ProgramFiles%` / `C:\Program Files` × Eclipse Adoptium / Java / Microsoft, matching `jdk-<ver>` then `jdk-<ver>.*` → 2. scoop `openjdk<ver>/current` |
 
-The order is: precise version managers first, then standard install paths, then per-manager fallbacks.
+The order is: precise version managers first, then standard install paths, then per-manager fallbacks. When multiple patch versions match (e.g. `jdk-21.0.1`, `jdk-21.0.2`), the alphabetically largest is selected as a proxy for "most recent within the major version".
+
+`:checkhealth jvm-env` prints the detected manager presence and the path each configured version resolves to.
 
 ## Environment variable naming
 
@@ -158,8 +170,8 @@ Possible future option:
 
 | Key | Type | Default | Description |
 |---|---|---|---|
-| `jdtls` | string | `"21"` | JDK major version used to run jdtls |
-| `gradle` | string | `"11"` | JDK major version used by Gradle |
+| `jdtls` | string \| false | `"21"` | JDK major version used to run jdtls. Pass `false` to skip. |
+| `gradle` | string \| false | `"11"` | JDK major version used by Gradle. Pass `false` to skip. |
 
 Versions are major-version strings (e.g. `"21"`). Exact versions (e.g. `"21.0.1"`) also work if `jenv` / `java_home` can match them, but the major version is usually enough.
 

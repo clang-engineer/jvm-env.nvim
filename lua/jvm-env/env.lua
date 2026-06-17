@@ -4,6 +4,9 @@ local M = {}
 local detect = require("jvm-env.detect")
 
 local function apply(env_var, version, label)
+  if version == nil or version == false then
+    return
+  end
   local path = detect.find_java(version)
   if path then
     vim.env[env_var] = path
