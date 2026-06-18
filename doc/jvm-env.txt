@@ -1,5 +1,5 @@
 *jvm-env.txt*
-                             For Neovim >= 0.10.0    Last change: 2026 June 17
+                             For Neovim >= 0.10.0    Last change: 2026 June 18
 
 ==============================================================================
 Table of Contents                                  *jvm-env-table-of-contents*
@@ -116,12 +116,12 @@ lazy.nvim <https://github.com/folke/lazy.nvim>:
       priority = 100,         -- load before LSP/jdtls related plugins
       opts = {
         jdtls = "21",
-        gradle = "11",
+        gradle = "17",
       },
     }
 <
 
-Leave `opts` empty to keep the defaults (`jdtls = "21"`, `gradle = "11"`).
+Leave `opts` empty to keep the defaults (`jdtls = "21"`, `gradle = "17"`).
 
 
 USAGE                                             *jvm-env-jvm-env.nvim-usage*
@@ -131,7 +131,7 @@ DEFAULT ~
 
 >lua
     require("jvm-env").setup()
-    -- fills both env vars with the defaults (jdtls=21, gradle=11)
+    -- fills both env vars with the defaults (jdtls=21, gradle=17)
 <
 
 
@@ -269,7 +269,7 @@ SETUP(OPTS) ~
                                                         jdtls. Pass false
                                                         to skip.
 
-  gradle            string | false    "11"              JDK major version
+  gradle            string | false    "17"              JDK major version
                                                         used by Gradle.
                                                         Pass false to
                                                         skip.
