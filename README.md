@@ -148,6 +148,8 @@ Key points:
 require("jvm-env").setup({ jdtls = "21", gradle = "17" })
 ```
 
+Or run `:JvmEnvInit 21 17` (versions optional — falls back to the active config) in the project root to write that line for you.
+
 Enable with `vim.o.exrc = true` and `:trust` the file once. Reopening Neovim inside that directory switches to the project-specific versions automatically.
 
 ## Detection order

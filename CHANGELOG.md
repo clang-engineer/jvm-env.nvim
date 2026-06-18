@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- `:JvmEnvInit [jdtls] [gradle]` writes `.nvim.lua` in the current cwd with the matching `setup` call. Arguments default to the active config.
 - `:checkhealth jvm-env` reports detected managers, resolved JDK paths, and current `vim.env` values.
 - `false` opt-out for `jdtls` / `gradle` options to skip writing one env var.
 - macOS Homebrew (`/opt/homebrew/opt/openjdk@<ver>`, `/usr/local/opt/openjdk@<ver>`) and SDKMAN fallback after `jenv` / `java_home`.
