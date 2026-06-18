@@ -34,11 +34,12 @@ end
 
 -- Glob a pattern and return the highest-versioned match, or nil.
 local function pick_largest(pattern)
-  local expanded = vim.fn.glob(pattern)
-  if expanded == "" then
+  -- nosuf=true so 'wildignore'/'suffixes' can't filter JDK paths; list=true
+  -- returns a table directly.
+  local matches = vim.fn.glob(pattern, true, true)
+  if #matches == 0 then
     return nil
   end
-  local matches = vim.fn.split(expanded, "\n")
   table.sort(matches, lt_natural)
   return matches[#matches]
 end

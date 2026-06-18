@@ -1,6 +1,6 @@
 -- jvm-env.nvim entry point
 -- Usage:
---   require("jvm-env").setup()                              -- defaults (jdtls=21, gradle=11)
+--   require("jvm-env").setup()                              -- defaults (jdtls=21, gradle=17)
 --   require("jvm-env").setup({ jdtls = "21", gradle = "17" })
 local M = {}
 

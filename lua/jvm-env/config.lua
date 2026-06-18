@@ -3,7 +3,7 @@ local M = {}
 
 local defaults = {
   jdtls = "21", -- JDK major version used to run jdtls
-  gradle = "11", -- JDK major version used by Gradle
+  gradle = "17", -- JDK major version used by Gradle
 }
 
 local options = vim.deepcopy(defaults)

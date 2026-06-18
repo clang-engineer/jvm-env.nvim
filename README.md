@@ -68,12 +68,12 @@ The "auto-detect JDK by major version and inject into env vars" niche is not cov
   priority = 100,         -- load before LSP/jdtls related plugins
   opts = {
     jdtls = "21",
-    gradle = "11",
+    gradle = "17",
   },
 }
 ```
 
-Leave `opts` empty to keep the defaults (`jdtls = "21"`, `gradle = "11"`).
+Leave `opts` empty to keep the defaults (`jdtls = "21"`, `gradle = "17"`).
 
 ## Usage
 
@@ -81,7 +81,7 @@ Leave `opts` empty to keep the defaults (`jdtls = "21"`, `gradle = "11"`).
 
 ```lua
 require("jvm-env").setup()
--- fills both env vars with the defaults (jdtls=21, gradle=11)
+-- fills both env vars with the defaults (jdtls=21, gradle=17)
 ```
 
 ### Custom versions
@@ -178,7 +178,7 @@ Why not reuse `JAVA_HOME`:
 | Key | Type | Default | Description |
 |---|---|---|---|
 | `jdtls` | string \| false | `"21"` | JDK major version used to run jdtls. Pass `false` to skip. |
-| `gradle` | string \| false | `"11"` | JDK major version used by Gradle. Pass `false` to skip. |
+| `gradle` | string \| false | `"17"` | JDK major version used by Gradle. Pass `false` to skip. |
 
 Versions are major-version strings (e.g. `"21"`). Exact versions (e.g. `"21.0.1"`) also work if `jenv` / `java_home` can match them, but the major version is usually enough.
 
