@@ -110,11 +110,7 @@ return {
     opts = function(_, opts)
       local function present(v) return v ~= nil and v ~= "" end
 
-      -- Fallback if jvm-env was not set up yet (e.g. .nvim.lua not trusted).
-      if not present(vim.env.JDTLS_JAVA_HOME) then
-        require("jvm-env").setup()
-      end
-
+      -- jvm-env (loaded eagerly above) has already populated these.
       local jdtls_home  = vim.env.JDTLS_JAVA_HOME
       local gradle_home = vim.env.GRADLE_JAVA_HOME
       if not present(jdtls_home) then return opts end
