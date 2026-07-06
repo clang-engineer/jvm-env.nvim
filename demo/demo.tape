@@ -21,9 +21,9 @@ Set Theme "Catppuccin Mocha"
 Hide
 Type "nvim -u demo/init.lua"
 Enter
-Sleep 2s
+Sleep 1s
 Show
-Sleep 1500ms
+Sleep 400ms
 
 # Run the health check: OS detection, manager presence, resolved JDK paths.
 Type ":checkhealth jvm-env"

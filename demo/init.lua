@@ -4,5 +4,6 @@
 vim.opt.runtimepath:prepend(vim.fn.getcwd())
 vim.o.termguicolors = true
 vim.o.swapfile = false
+vim.o.cmdheight = 2 -- 2-line :JvmEnvInit notify shows without a "Press ENTER" prompt
 
 require("jvm-env").setup({ jdtls = "21", gradle = "17" })
