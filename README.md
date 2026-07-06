@@ -16,6 +16,8 @@ require("jvm-env").setup({ jdtls = "21", gradle = "17" })
 -- → vim.env.GRADLE_JAVA_HOME = <JDK 17 home>
 ```
 
+![jvm-env.nvim :checkhealth demo](demo/demo.gif)
+
 ## What it does
 
 - Tries `jenv prefix` / `/usr/libexec/java_home` / `~/.sdkman` / `/usr/lib/jvm/*` / standard Windows JDK paths / scoop **per OS, in order** to locate the JDK home for the requested major version.
