@@ -1,5 +1,6 @@
 -- Per-OS JDK path detection.
 -- Supported managers / locations:
+--   mise:    $MISE_DATA_DIR/installs/java/* (all platforms, tried first)
 --   macOS:   jenv (major -> exact fallback) -> /usr/libexec/java_home
 --            -> Homebrew openjdk@<ver> -> SDKMAN
 --   Linux:   /usr/lib/jvm/* + SDKMAN (~/.sdkman/candidates/java)
@@ -42,6 +43,65 @@ local function pick_largest(pattern)
   end
   table.sort(matches, lt_natural)
   return matches[#matches]
+end
+
+-- Version string -> major number ("21.0.11" -> 21, "1.8.0_472" -> 8).
+local function parse_major(ver)
+  local legacy = ver:match("^1%.(%d+)")
+  return tonumber(legacy or ver:match("^(%d+)"))
+end
+
+-- Read a JDK home's real major version. Prefers the `release` file (no
+-- subprocess); falls back to `bin/java -version` for JDKs that ship no
+-- `release` file (e.g. some JDK 8 builds). Returns nil if neither works.
+local function major_of(home)
+  local release = home .. "/release"
+  if vim.fn.filereadable(release) == 1 then
+    for _, line in ipairs(vim.fn.readfile(release)) do
+      local ver = line:match('^JAVA_VERSION="([^"]+)"')
+      if ver then
+        return parse_major(ver)
+      end
+    end
+  end
+  local java = home .. "/bin/java"
+  if vim.fn.executable(java) == 1 then
+    local out = vim.fn.system(vim.fn.shellescape(java) .. " -version 2>&1")
+    local ver = out:match('version%s+"([^"]+)"')
+    if ver then
+      return parse_major(ver)
+    end
+  end
+  return nil
+end
+
+-- True when `home` is a real JDK whose major version equals the requested one.
+-- Guards against tools that return a fallback JVM instead of an exact match --
+-- notably `/usr/libexec/java_home -v N`, which exits 0 with the default JVM
+-- when version N is absent.
+local function version_matches(home, version)
+  return home ~= "" and major_of(home) == tonumber(version)
+end
+
+-- mise-managed JDKs live under $MISE_DATA_DIR/installs/java/* (default
+-- ~/.local/share/mise). Dir names carry the version, but we verify each
+-- candidate's real major rather than trust the name.
+local function find_mise(version)
+  local data_dir = vim.env.MISE_DATA_DIR
+  if not data_dir or data_dir == "" then
+    data_dir = (vim.env.HOME or "") .. "/.local/share/mise"
+  end
+  local matched = {}
+  for _, home in ipairs(vim.fn.glob(data_dir .. "/installs/java/*", true, true)) do
+    if vim.fn.isdirectory(home) == 1 and version_matches(home, version) then
+      matched[#matched + 1] = home
+    end
+  end
+  if #matched == 0 then
+    return nil
+  end
+  table.sort(matched, lt_natural)
+  return matched[#matched]
 end
 
 local function find_windows(version)
@@ -104,10 +164,11 @@ local function find_macos(version)
       end
     end
   end
-  -- 3. /usr/libexec/java_home
+  -- 3. /usr/libexec/java_home. `-v N` exits 0 with the default JVM when N is
+  -- absent, so verify the returned JDK's real major before trusting it.
   if vim.fn.executable("/usr/libexec/java_home") == 1 then
     local result = vim.fn.trim(vim.fn.system("/usr/libexec/java_home -v " .. v_esc .. " 2>/dev/null"))
-    if vim.v.shell_error == 0 and result ~= "" then
+    if vim.v.shell_error == 0 and version_matches(result, version) then
       return result
     end
   end
@@ -153,6 +214,10 @@ end
 
 -- Take a major-version string ("21", "17", ...) and return a JDK home path, or nil if not found.
 function M.find_java(version)
+  local mise = find_mise(version)
+  if mise then
+    return mise
+  end
   if is_windows then
     return find_windows(version)
   elseif is_macos then
