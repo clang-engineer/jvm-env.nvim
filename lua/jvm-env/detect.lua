@@ -1,6 +1,6 @@
 -- Per-OS JDK path detection.
 -- Supported managers / locations:
---   mise:    $MISE_DATA_DIR/installs/java/* (all platforms, tried first)
+--   mise/asdf: <data>/installs/java/* (all platforms, tried first)
 --   macOS:   jenv (major -> exact fallback) -> /usr/libexec/java_home
 --            -> Homebrew openjdk@<ver> -> SDKMAN
 --   Linux:   /usr/lib/jvm/* + SDKMAN (~/.sdkman/candidates/java)
@@ -83,18 +83,42 @@ local function version_matches(home, version)
   return home ~= "" and major_of(home) == tonumber(version)
 end
 
--- mise-managed JDKs live under $MISE_DATA_DIR/installs/java/* (default
--- ~/.local/share/mise). Dir names carry the version, but we verify each
--- candidate's real major rather than trust the name.
-local function find_mise(version)
-  local data_dir = vim.env.MISE_DATA_DIR
-  if not data_dir or data_dir == "" then
-    data_dir = (vim.env.HOME or "") .. "/.local/share/mise"
+-- A version-manager install dir may be the JDK home itself, or (macOS tarballs)
+-- wrap it in Contents/Home. Return whichever actually holds the runtime, or nil.
+local function jdk_home(dir)
+  if major_of(dir) then
+    return dir
+  end
+  local wrapped = dir .. "/Contents/Home"
+  if major_of(wrapped) then
+    return wrapped
+  end
+  return nil
+end
+
+-- mise and asdf both keep JDKs under <data>/installs/java/* with vendor-tagged
+-- names (mise inherited asdf's plugin layout). Dir names carry the version, but
+-- we verify each candidate's real major rather than trust the name.
+local function find_version_manager(version)
+  local home = vim.env.HOME or ""
+  local roots = { home .. "/.local/share/mise", home .. "/.asdf" }
+  -- Honor explicit data-dir overrides. Appended (not literal-inlined) so an
+  -- unset var can't leave a nil hole that stops ipairs early.
+  if vim.env.MISE_DATA_DIR and vim.env.MISE_DATA_DIR ~= "" then
+    table.insert(roots, vim.env.MISE_DATA_DIR)
+  end
+  if vim.env.ASDF_DATA_DIR and vim.env.ASDF_DATA_DIR ~= "" then
+    table.insert(roots, vim.env.ASDF_DATA_DIR)
   end
   local matched = {}
-  for _, home in ipairs(vim.fn.glob(data_dir .. "/installs/java/*", true, true)) do
-    if vim.fn.isdirectory(home) == 1 and version_matches(home, version) then
-      matched[#matched + 1] = home
+  for _, root in ipairs(roots) do
+    if root ~= "" then
+      for _, dir in ipairs(vim.fn.glob(root .. "/installs/java/*", true, true)) do
+        local jdk = jdk_home(dir)
+        if jdk and major_of(jdk) == tonumber(version) then
+          matched[#matched + 1] = jdk
+        end
+      end
     end
   end
   if #matched == 0 then
@@ -214,9 +238,9 @@ end
 
 -- Take a major-version string ("21", "17", ...) and return a JDK home path, or nil if not found.
 function M.find_java(version)
-  local mise = find_mise(version)
-  if mise then
-    return mise
+  local managed = find_version_manager(version)
+  if managed then
+    return managed
   end
   if is_windows then
     return find_windows(version)
