@@ -1,5 +1,5 @@
 *jvm-env.txt*
-                             For Neovim >= 0.10.0    Last change: 2026 July 06
+                          For Neovim >= 0.10.0    Last change: 2026 October 11
 
 ==============================================================================
 Table of Contents                                  *jvm-env-table-of-contents*
@@ -163,16 +163,16 @@ WIRING UP JDTLS (LAZYVIM + NVIM-JDTLS) ~
         "mfussenegger/nvim-jdtls",
         opts = function(_, opts)
           local function present(v) return v ~= nil and v ~= "" end
-    
+
           -- jvm-env (loaded eagerly above) has already populated these.
           local jdtls_home  = vim.env.JDTLS_JAVA_HOME
           local gradle_home = vim.env.GRADLE_JAVA_HOME
           if not present(jdtls_home) then return opts end
-    
+
           local cmd = { vim.fn.exepath("jdtls") }
           table.insert(cmd, "--java-executable")
           table.insert(cmd, jdtls_home .. "/bin/java")
-    
+
           opts.jdtls = vim.tbl_deep_extend("force", opts.jdtls or {}, {
             cmd = cmd,
             cmd_env = present(gradle_home) and {
@@ -239,10 +239,10 @@ DETECTION ORDER                         *jvm-env-jvm-env.nvim-detection-order*
                                       openjdk<ver>/current
   ---------------------------------------------------------------------------
 The order is: precise version managers first, then standard install paths, then
-per-manager fallbacks. mise/asdf install directories are verified by reading the
-actual JDK version instead of trusting the directory name. When multiple patch
-versions match (e.g. `jdk-21.0.1`, `jdk-21.0.10`), the highest one is selected
-via natural (numeric) ordering so `21.0.10` outranks `21.0.9`.
+per-manager fallbacks. mise/asdf install directories are verified by reading
+the actual JDK version instead of trusting the directory name. When multiple
+patch versions match (e.g. `jdk-21.0.1`, `jdk-21.0.10`), the highest one is
+selected via natural (numeric) ordering so `21.0.10` outranks `21.0.9`.
 
 `:checkhealth jvm-env` prints detected manager presence, mise/asdf Java
 installs, and the path each configured version resolves to. If a requested JDK
