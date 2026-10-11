@@ -156,13 +156,14 @@ Enable with `vim.o.exrc = true` and `:trust` the file once. Reopening Neovim ins
 
 | OS | Order |
 |---|---|
-| **macOS** | 1. `jenv prefix <ver>` (if `jenv` is installed) → 2. `jenv versions --bare` filtered to `<ver>.*` (exact fallback) → 3. `/usr/libexec/java_home -v <ver>` → 4. Homebrew `/opt/homebrew/opt/openjdk@<ver>` / `/usr/local/opt/openjdk@<ver>` → 5. `~/.sdkman/candidates/java/<ver>.*` |
-| **Linux** | 1. `/usr/lib/jvm/java-<ver>-openjdk` → 2. `/usr/lib/jvm/java-<ver>-openjdk-amd64` → 3. `/usr/lib/jvm/jdk-<ver>` → 4. `/usr/lib/jvm/jdk-<ver>.*` (versioned) → 5. `/usr/lib/jvm/java-<ver>.*` (versioned) → 6. `~/.sdkman/candidates/java/<ver>.*` |
-| **Windows** | 1. `%ProgramW6432%` / `%ProgramFiles%` / `C:\Program Files` × Eclipse Adoptium / Java / Microsoft, matching `jdk-<ver>` then `jdk-<ver>.*` → 2. scoop `openjdk<ver>/current` |
+| **All OSes** | 1. mise/asdf `<data>/installs/java/*` (`~/.local/share/mise`, `~/.asdf`, `$MISE_DATA_DIR`, `$ASDF_DATA_DIR`) |
+| **macOS** | 2. `jenv prefix <ver>` (if `jenv` is installed) → 3. `jenv versions --bare` filtered to `<ver>.*` (exact fallback) → 4. `/usr/libexec/java_home -v <ver>` → 5. Homebrew `/opt/homebrew/opt/openjdk@<ver>` / `/usr/local/opt/openjdk@<ver>` → 6. `~/.sdkman/candidates/java/<ver>.*` |
+| **Linux** | 2. `/usr/lib/jvm/java-<ver>-openjdk` → 3. `/usr/lib/jvm/java-<ver>-openjdk-amd64` → 4. `/usr/lib/jvm/jdk-<ver>` → 5. `/usr/lib/jvm/jdk-<ver>.*` (versioned) → 6. `/usr/lib/jvm/java-<ver>.*` (versioned) → 7. `~/.sdkman/candidates/java/<ver>.*` |
+| **Windows** | 2. `%ProgramW6432%` / `%ProgramFiles%` / `C:\Program Files` × Eclipse Adoptium / Java / Microsoft, matching `jdk-<ver>` then `jdk-<ver>.*` → 3. scoop `openjdk<ver>/current` |
 
-The order is: precise version managers first, then standard install paths, then per-manager fallbacks. When multiple patch versions match (e.g. `jdk-21.0.1`, `jdk-21.0.10`), the highest one is selected via natural (numeric) ordering so `21.0.10` outranks `21.0.9`.
+The order is: precise version managers first, then standard install paths, then per-manager fallbacks. mise/asdf install directories are verified by reading the actual JDK version instead of trusting the directory name. When multiple patch versions match (e.g. `jdk-21.0.1`, `jdk-21.0.10`), the highest one is selected via natural (numeric) ordering so `21.0.10` outranks `21.0.9`.
 
-`:checkhealth jvm-env` prints the detected manager presence and the path each configured version resolves to.
+`:checkhealth jvm-env` prints detected manager presence, mise/asdf Java installs, and the path each configured version resolves to. If a requested JDK is missing while version-manager Java installs are present, health output suggests checking the requested major version and stale `lazy-lock.json` pins.
 
 ## Environment variable naming
 

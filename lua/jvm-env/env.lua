@@ -12,7 +12,7 @@ local function apply(env_var, version, label)
     vim.env[env_var] = path
   else
     vim.notify(
-      "[jvm-env] JDK " .. version .. " (" .. label .. ") not found",
+      "[jvm-env] JDK " .. version .. " (" .. label .. ") not found. Run :checkhealth jvm-env for detection details.",
       vim.log.levels.WARN,
       { title = "jvm-env" }
     )
